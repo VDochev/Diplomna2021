@@ -36,14 +36,14 @@ def runPolynomialRegression(dataFrame):
     #print_calculated_errors(y, y_poly_pred)
     #plot_poly_line(x_date, y, y_poly_pred)
 
+    # Predict using rolling window
+    rollingWindow = predictRollingWindow(y_poly_pred.reshape(-1), 14)
+    prediction_line_rWindow = np.concatenate((y_poly_pred.reshape(-1), rollingWindow))
+
     # Timing measurement
     end_timer = time.time()
     performance = end_timer - start_timer
     print("Time for execution: " + str(performance))
-
-    # Predict using rolling window
-    rollingWindow = predictRollingWindow(y_poly_pred.reshape(-1), 14)
-    prediction_line_rWindow = np.concatenate((y_poly_pred.reshape(-1), rollingWindow))
 
     x_date_predict = create7dayArray(x_date[-1])
     x_date_predict = np.concatenate((x_date, x_date_predict))
