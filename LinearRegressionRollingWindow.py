@@ -36,10 +36,6 @@ def runPolynomialRegression(dataFrame):
     #print_calculated_errors(y, y_poly_pred)
     #plot_poly_line(x_date, y, y_poly_pred)
 
-    # Predict using ARIMA and plot
-    ARIMAprediction = predictARIMA(y_poly_pred.reshape(-1))
-    prediction_line_ARIMA = np.concatenate((y_poly_pred.reshape(-1), ARIMAprediction))
-
     # Timing measurement
     end_timer = time.time()
     performance = end_timer - start_timer
@@ -52,18 +48,7 @@ def runPolynomialRegression(dataFrame):
     x_date_predict = create7dayArray(x_date[-1])
     x_date_predict = np.concatenate((x_date, x_date_predict))
 
-    #plot_poly_line(x_date_predict, y, prediction_line_ARIMA)
-    #plot_poly_line(x_date_predict, y, prediction_line_rWindow)
-    print(ARIMAprediction)
-    print(rollingWindow)
-
-def predictARIMA(dataFrame):
-    # TODO intagrate using AR, i.e. 1, 2, 2
-    model = ARIMA(dataFrame, order=(0,2,2))
-    results = model.fit(disp=-1, method="css", trend="c", maxiter=500, solver="powell")
-    preictedFutureValues = results.predict(start = len(dataFrame), end = len(dataFrame)+6, dynamic= True)
-    preictedFutureValues = preictedFutureValues + dataFrame[-1]
-    return preictedFutureValues
+    plot_poly_line(x_date_predict, y, prediction_line_rWindow)
 
 def predictRollingWindow(dataFrame, window_size, days=7):
     window = dataFrame[-window_size:]

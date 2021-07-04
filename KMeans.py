@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import time
 
-#from sklearn.cluster import KMeans
-from tslearn.clustering import TimeSeriesKMeans
 from sklearn.cluster import KMeans
 
 from libs.plots import plot_array_blobs
@@ -18,18 +16,11 @@ def runKMeans(dataFrame):
 
     # Timing measurement
     start_timer = time.time()
-    '''
+
     # Standart KMeans algorithm
     kmeans = KMeans(n_clusters=n_clusters, random_state=0)
     kmeans.fit(y)
     labels = kmeans.labels_
-    '''
-
-    # KMeans algorithm for time series
-    tskmeans = TimeSeriesKMeans(n_clusters=n_clusters, metric="softdtw", max_iter=10)
-    tskmeans.fit(y)
-    labels = tskmeans.labels_
-
 
     # Timing measurement
     end_timer = time.time()
