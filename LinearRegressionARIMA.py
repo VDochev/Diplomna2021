@@ -10,7 +10,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from statsmodels.tsa.arima_model import ARIMA
 
-def runPolynomialRegression(dataFrame):
+def runPolynomialRegressionARIMA(dataFrame):
     # Use data from the dateFrame for the hour_of_day
     x_date = np.array(dataFrame.index.values)
     x = np.array(range(0, len(x_date)))
@@ -60,4 +60,4 @@ def predictARIMA(dataFrame):
 if __name__ == "__main__":
     fullDataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=0, parse_dates=True, date_parser=parser)
     dataFrame = getPartofDF(fullDataFrame, 9)
-    runPolynomialRegression(dataFrame)
+    runPolynomialRegressionARIMA(dataFrame)
