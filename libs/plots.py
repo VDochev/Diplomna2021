@@ -60,12 +60,13 @@ def plot_aglomerative_tree(x, y, labels):
         plt.plot_date(x[i], y[i], xdate=True, ydate=False, color=colors[labels[i]])
     plt.show()
 
-def plot_forecast(forecast_values, labels_of_forecast, dates_of_forecast):
+def plot_forecast(forecast_values, labels_of_forecast, dates_of_forecast, test_data):
     day = 0
     _, ax = plt.subplots()
+
     for label in labels_of_forecast:
-        ax.plot_date([dates_of_forecast[day]] * 3, forecast_values[label])
+        ax.plot_date([dates_of_forecast[day]] * len(forecast_values[label]), forecast_values[label], marker = 's', color="steelblue")
+        if test_data is not None:
+            ax.plot_date(dates_of_forecast[day], test_data[day], marker='d', color='orangered')
         day += 1
-    figManager = plt.get_current_fig_manager()
-    figManager.window.showMaximized()
     plt.show()

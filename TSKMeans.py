@@ -5,13 +5,13 @@ import time
 #from sklearn.cluster import KMeans
 from tslearn.clustering import TimeSeriesKMeans
 
-from libs.plots import plot_array_blobs
+from libs.plots import plot_array_blobs, plot_forecast
 from libs.dFManipulations import parser, getAreaofDF
-from libs.mathHelper import create7dayArray, predictnextNDays, getResults, calculateAverageSilhouette
+from libs.mathHelper import *
 
-def runKMeans(dataFrame):
+def runTSKMeans(dataFrame, test_data):
     x_date = np.array(dataFrame.index.values)
-    dates_to_forecast = create7dayArray(x_date[-1])
+    dates_of_forecast = create7dayArray(x_date[-1])
     y = np.array(dataFrame)
     n_clusters = 25
 
@@ -31,10 +31,16 @@ def runKMeans(dataFrame):
     calculateAverageSilhouette(y, labels, n_clusters)
 
     plot_array_blobs(x_date, y, labels)
-    labels_of_predicted_days = predictnextNDays(labels, 7)
-    getResults(dataFrame, labels, labels_of_predicted_days, dates_to_forecast)
+    forecasted_clusters = predictnextNDays(labels, 7)
+    forecast_values = getResults(dataFrame, labels, forecasted_clusters)
+
+    print_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
+    plot_forecast(forecast_values, forecasted_clusters, dates_of_forecast, test_data)
 
 if __name__ == "__main__":
+    hour_of_day = 9
     fulldataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
-    dataFrame = getAreaofDF(fulldataFrame, 8, 10)
-    runKMeans(dataFrame)
+    dataFrame = getAreaofDF(fulldataFrame, hour_of_day-1, hour_of_day+1)
+    test_data = pd.read_csv(r'resources\test_data.csv')
+    test_data = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
+    runTSKMeans(dataFrame, test_data)

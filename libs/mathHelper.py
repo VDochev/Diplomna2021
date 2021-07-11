@@ -7,7 +7,6 @@ from scipy.stats import beta
 from statsmodels.tsa.stattools import adfuller
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.metrics import silhouette_score
-from libs.plots import plot_forecast
 
 def get_rmse(x, x_poly_pred):
     return np.sqrt(mean_squared_error(x, x_poly_pred))
@@ -88,7 +87,7 @@ def calculateMinMaxAverage(dataFrame):
     average_v = dataFrame.mean()
     return min_v, max_v, average_v
 
-def getResults(dataFrame, labels, forecasted_clusters, dates_of_forecast, area_of_values_in_a_day=True):
+def getResults(dataFrame, labels, forecasted_clusters):
     forecast_values = {}
     for cluster in unique(forecasted_clusters):
         values_in_cluster = []
@@ -96,9 +95,7 @@ def getResults(dataFrame, labels, forecasted_clusters, dates_of_forecast, area_o
         for day in days_in_cluster:
             values_in_cluster = np.append(values_in_cluster, dataFrame.loc[day])
         forecast_values[cluster] = calculateMinMaxAverage(values_in_cluster)
-
-    print_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
-    plot_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
+    return forecast_values
 
 def calculateAverageSilhouette(X, labels, n_clusters):
     silhouette_avg = silhouette_score(X, labels)

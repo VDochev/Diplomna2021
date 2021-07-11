@@ -2,15 +2,15 @@ import pandas as pd
 import numpy as np
 import time
 
-from libs.plots import plot_aglomerative_tree
+from libs.plots import plot_aglomerative_tree, plot_forecast
 from libs.dFManipulations import parser, getPartofDF
-from libs.mathHelper import create7dayArray, predictnextNDays, getResults, calculateAverageSilhouette
+from libs.mathHelper import *
 
 from sklearn.cluster import AgglomerativeClustering
 
-def runAgglomerativeClustering(dataFrame):
+def runAgglomerativeClustering(dataFrame, test_data=None):
     x_date = np.array(dataFrame.index.values)
-    x_date_predict = create7dayArray(x_date[-1])
+    dates_of_forecast = create7dayArray(x_date[-1])
     y = np.array(dataFrame)
     n_clusters = 25
 
@@ -29,10 +29,16 @@ def runAgglomerativeClustering(dataFrame):
     calculateAverageSilhouette(y.reshape(-1, 1), labels, n_clusters)
 
     plot_aglomerative_tree(x_date, y, labels)
-    labels_of_predicted_days = predictnextNDays(labels, 7)
-    getResults(dataFrame, labels, labels_of_predicted_days, x_date_predict, area_of_values_in_a_day=False)
+    forecasted_clusters = predictnextNDays(labels, 7)
+    forecast_values = getResults(dataFrame, labels, forecasted_clusters)
+
+    print_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
+    plot_forecast(forecast_values, forecasted_clusters, dates_of_forecast, test_data)
 
 if __name__ == "__main__":
+    hour_of_day = 9
     fulldataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
-    dataFrame = getPartofDF(fulldataFrame, 9)
-    runAgglomerativeClustering(dataFrame)
+    dataFrame = getPartofDF(fulldataFrame, hour_of_day)
+    test_data = pd.read_csv(r'resources\test_data.csv')
+    test_data = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
+    runAgglomerativeClustering(dataFrame, test_data)
