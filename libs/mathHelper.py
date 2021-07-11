@@ -76,11 +76,11 @@ def predictRollingWindow(dataFrame, window_size):
         result = np.append(result, windowCalculation)
     return result
 
-def extractDaysForCluster(dataFrame, labels, label):
+def getDaysInCluster(dataFrame, labels, cluster):
     cluster_map = pd.DataFrame()
     cluster_map['data_index'] = dataFrame.index.values
     cluster_map['cluster'] = labels
-    return cluster_map[cluster_map.cluster == label]['data_index']
+    return cluster_map[cluster_map.cluster == cluster]['data_index']
 
 def calculateMinMaxAverage(dataFrame):
     min_v = dataFrame.min()
@@ -88,21 +88,17 @@ def calculateMinMaxAverage(dataFrame):
     average_v = dataFrame.mean()
     return min_v, max_v, average_v
 
-def getResults(dataFrame, labels, labels_of_forecast, dates_of_forecast, area_of_values_in_a_day=True):
+def getResults(dataFrame, labels, forecasted_clusters, dates_of_forecast, area_of_values_in_a_day=True):
     forecast_values = {}
-    for label in unique(labels_of_forecast):
-        values_per_days_in_cluster = []
-        days_in_cluster = extractDaysForCluster(dataFrame, labels, label)
+    for cluster in unique(forecasted_clusters):
+        values_in_cluster = []
+        days_in_cluster = getDaysInCluster(dataFrame, labels, cluster)
         for day in days_in_cluster:
-            if area_of_values_in_a_day:
-                values_for_the_day = dataFrame.loc[day].to_numpy()
-            else:
-                values_for_the_day = dataFrame.loc[day]
-            values_per_days_in_cluster = np.append(values_per_days_in_cluster, values_for_the_day)
-        forecast_values[label] = calculateMinMaxAverage(values_per_days_in_cluster)
+            values_in_cluster = np.append(values_in_cluster, dataFrame.loc[day])
+        forecast_values[cluster] = calculateMinMaxAverage(values_in_cluster)
 
-    print_forecast(forecast_values, labels_of_forecast, dates_of_forecast)
-    plot_forecast(forecast_values, labels_of_forecast, dates_of_forecast)
+    print_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
+    plot_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
 
 def calculateAverageSilhouette(X, labels, n_clusters):
     silhouette_avg = silhouette_score(X, labels)
