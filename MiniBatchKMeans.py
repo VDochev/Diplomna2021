@@ -3,14 +3,14 @@ import numpy as np
 import time
 
 from libs.plots import plot_array_blobs
-from libs.dFManipulations import parser, getPartofDF, getAreaofDF
-from libs.mathHelper import create7dayArray, predictnextNDays, printPredictedValues, calculateAverageSilhouette
+from libs.dFManipulations import parser, getAreaofDF
+from libs.mathHelper import create7dayArray, predictnextNDays, getResults, calculateAverageSilhouette
 
 from sklearn.cluster import MiniBatchKMeans
 
 def runMiniBatchKMeans(dataFrame):
     x_date = np.array(dataFrame.index.values)
-    x_date_predict = create7dayArray(x_date[-1])
+    dates_to_forecast = create7dayArray(x_date[-1])
     y = np.array(dataFrame)
     n_clusters = 20
 
@@ -30,7 +30,7 @@ def runMiniBatchKMeans(dataFrame):
 
     plot_array_blobs(x_date, y, labels)
     labels_of_predicted_days = predictnextNDays(labels, 7)
-    printPredictedValues(dataFrame, labels, labels_of_predicted_days, x_date_predict)
+    getResults(dataFrame, labels, labels_of_predicted_days, dates_to_forecast)
 
 
 if __name__ == "__main__":

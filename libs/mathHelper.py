@@ -7,6 +7,7 @@ from scipy.stats import beta
 from statsmodels.tsa.stattools import adfuller
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.metrics import silhouette_score
+from libs.plots import plot_forecast
 
 def get_rmse(x, x_poly_pred):
     return np.sqrt(mean_squared_error(x, x_poly_pred))
@@ -26,6 +27,13 @@ def print_stationarity(dataFrame):
     print('Critical Values:')
     for key, value in result[4].items():
         print('\t{}: {}'.format(key, value))
+
+def print_forecast(forecast_values, labels_of_forecast, dates_of_forecast):
+    day = 0
+    for label in labels_of_forecast:
+        print("Day: " + str(dates_of_forecast[day]), end=', ')
+        print("Expected min: %d, Expected max: %d, Expected average: %.2f" % forecast_values[label])
+        day += 1
 
 def create7dayArray(lastDay):
     days = 7
@@ -80,9 +88,9 @@ def calculateMinMaxAverage(dataFrame):
     average_v = dataFrame.mean()
     return min_v, max_v, average_v
 
-def printPredictedValues(dataFrame, labels, labels_of_predicted_days, date_predict, area_of_values_in_a_day=True):
-    result_tuple = []
-    for label in unique(labels_of_predicted_days):
+def getResults(dataFrame, labels, labels_of_forecast, dates_of_forecast, area_of_values_in_a_day=True):
+    forecast_values = {}
+    for label in unique(labels_of_forecast):
         values_per_days_in_cluster = []
         days_in_cluster = extractDaysForCluster(dataFrame, labels, label)
         for day in days_in_cluster:
@@ -91,16 +99,10 @@ def printPredictedValues(dataFrame, labels, labels_of_predicted_days, date_predi
             else:
                 values_for_the_day = dataFrame.loc[day]
             values_per_days_in_cluster = np.append(values_per_days_in_cluster, values_for_the_day)
-        result_tuple.append((label, calculateMinMaxAverage(values_per_days_in_cluster)))
+        forecast_values[label] = calculateMinMaxAverage(values_per_days_in_cluster)
 
-    day = 0
-    for label in labels_of_predicted_days:
-        for result in result_tuple:
-            if label == result[0]:
-                print("Day: " + str(date_predict[day]), end=', ')
-                print("Expected min: %d, Expected max: %d, Expected average: %.2f" % result[1])
-                day += 1
-    return
+    print_forecast(forecast_values, labels_of_forecast, dates_of_forecast)
+    plot_forecast(forecast_values, labels_of_forecast, dates_of_forecast)
 
 def calculateAverageSilhouette(X, labels, n_clusters):
     silhouette_avg = silhouette_score(X, labels)

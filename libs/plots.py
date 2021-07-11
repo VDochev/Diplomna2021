@@ -59,3 +59,13 @@ def plot_aglomerative_tree(x, y, labels):
     for i in range(x_len):
         plt.plot_date(x[i], y[i], xdate=True, ydate=False, color=colors[labels[i]])
     plt.show()
+
+def plot_forecast(forecast_values, labels_of_forecast, dates_of_forecast):
+    day = 0
+    _, ax = plt.subplots()
+    for label in labels_of_forecast:
+        ax.plot_date([dates_of_forecast[day]] * 3, forecast_values[label])
+        day += 1
+    figManager = plt.get_current_fig_manager()
+    figManager.window.showMaximized()
+    plt.show()

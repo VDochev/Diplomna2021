@@ -3,8 +3,8 @@ import numpy as np
 import time
 
 from libs.plots import plot_aglomerative_tree
-from libs.dFManipulations import parser, getPartofDF, getAreaofDF
-from libs.mathHelper import create7dayArray, predictnextNDays, printPredictedValues, calculateAverageSilhouette
+from libs.dFManipulations import parser, getPartofDF
+from libs.mathHelper import create7dayArray, predictnextNDays, getResults, calculateAverageSilhouette
 
 from sklearn.cluster import AgglomerativeClustering
 
@@ -30,7 +30,7 @@ def runAgglomerativeClustering(dataFrame):
 
     plot_aglomerative_tree(x_date, y, labels)
     labels_of_predicted_days = predictnextNDays(labels, 7)
-    printPredictedValues(dataFrame, labels, labels_of_predicted_days, x_date_predict, area_of_values_in_a_day=False)
+    getResults(dataFrame, labels, labels_of_predicted_days, x_date_predict, area_of_values_in_a_day=False)
 
 if __name__ == "__main__":
     fulldataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
