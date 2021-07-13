@@ -58,6 +58,7 @@ def predictARIMA(dataFrame):
     return preictedFutureValues
 
 if __name__ == "__main__":
+    hour_of_day = 9
     fullDataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=0, parse_dates=True, date_parser=parser)
-    dataFrame = getPartofDF(fullDataFrame, 9)
+    dataFrame = getPartofDF(fullDataFrame, hour_of_day)
     runPolynomialRegressionARIMA(dataFrame)
