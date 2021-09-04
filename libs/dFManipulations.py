@@ -12,3 +12,9 @@ def getAreaofDF(fulldataFrame, first_hour, last_hour):
 
 def parser(x):
     return datetime.strptime(x, '%d.%m.%Y').date()
+
+def addFeaturesToData(dataFrame, features):
+    return dataFrame.join(features)
+
+def removeFeatureFromData(dataFrame, hour_of_the_day):
+    return dataFrame.iloc[:,:hour_of_the_day]

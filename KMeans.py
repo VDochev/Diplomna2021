@@ -18,7 +18,7 @@ def runKMeans(dataFrame, test_data):
     start_timer = time.time()
 
     # Standart KMeans algorithm
-    kmeans = KMeans(n_clusters=n_clusters, random_state=0)
+    kmeans = KMeans(n_clusters=n_clusters, precompute_distances=False)
     kmeans.fit(y)
     labels = kmeans.labels_
 
@@ -38,8 +38,8 @@ def runKMeans(dataFrame, test_data):
 
 if __name__ == "__main__":
     hour_of_day = 9
-    fulldataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
+    fulldataFrame = pd.read_csv(r'resources\data_2021.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
     dataFrame = getAreaofDF(fulldataFrame, hour_of_day-1, hour_of_day+1)
-    test_data = pd.read_csv(r'resources\test_data.csv')
+    test_data = pd.read_csv(r'resources\data_2021_test.csv')
     test_data = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
     runKMeans(dataFrame, test_data)

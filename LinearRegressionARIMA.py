@@ -59,6 +59,6 @@ def predictARIMA(dataFrame):
 
 if __name__ == "__main__":
     hour_of_day = 9
-    fullDataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=0, parse_dates=True, date_parser=parser)
+    fullDataFrame = pd.read_csv(r'resources\data_2021.csv', index_col=0, header=0, parse_dates=True, date_parser=parser)
     dataFrame = getPartofDF(fullDataFrame, hour_of_day)
     runPolynomialRegressionARIMA(dataFrame)

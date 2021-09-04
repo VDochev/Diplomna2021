@@ -31,7 +31,8 @@ def print_forecast(forecast_values, labels_of_forecast, dates_of_forecast):
     day = 0
     for label in labels_of_forecast:
         print("Day: " + str(dates_of_forecast[day]), end=', ')
-        print("Expected min: %d, Expected max: %d, Expected average: %.2f" % forecast_values[label])
+        print("Expected min: %d, Expected max: %d, Expected average: %.2f" % forecast_values[label], end=" ")
+        print("Delta: %d" % (forecast_values[label][1] - forecast_values[label][0]))
         day += 1
 
 def create7dayArray(lastDay):

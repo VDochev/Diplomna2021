@@ -38,8 +38,8 @@ def runMiniBatchKMeans(dataFrame, test_data):
 
 if __name__ == "__main__":
     hour_of_day = 9
-    fulldataFrame = pd.read_csv(r'resources\data.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
+    fulldataFrame = pd.read_csv(r'resources\data_2021.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
     dataFrame = getAreaofDF(fulldataFrame, hour_of_day-1, hour_of_day+1)
-    test_data = pd.read_csv(r'resources\test_data.csv')
+    test_data = pd.read_csv(r'resources\data_2021_test.csv')
     test_data = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
     runMiniBatchKMeans(dataFrame, test_data)
