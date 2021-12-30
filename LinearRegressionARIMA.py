@@ -1,16 +1,25 @@
-import numpy as np
-import pandas as pd
 import time
 
-from libs.dFManipulations import parser, getPartofDF
-from libs.mathHelper import print_calculated_errors, create7dayArray
-from libs.plots import plot_poly_line
-
+import numpy as np
+import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from statsmodels.tsa.arima_model import ARIMA
 
-def runPolynomialRegressionARIMA(dataFrame):
+
+from libs.dFManipulations import getPartofDF, parser
+from libs.mathHelper import create7dayArray
+from libs.plots import plot_error_rate, plot_poly_line
+
+
+def predictARIMA(dataFrame):
+    model = ARIMA(dataFrame)
+    results = model.fit(disp=-1, method="css", trend="c", maxiter=500, solver="powell")
+    preictedFutureValues = results.predict(start = len(dataFrame), end = len(dataFrame)+6, dynamic= True)
+    preictedFutureValues = preictedFutureValues + dataFrame[-1]
+    return preictedFutureValues
+
+def runPolynomialRegressionARIMA(dataFrame, test_data, hour):
     # Use data from the dateFrame for the hour_of_day
     x_date = np.array(dataFrame.index.values)
     x = np.array(range(0, len(x_date)))
@@ -48,17 +57,29 @@ def runPolynomialRegressionARIMA(dataFrame):
     x_date_predict = create7dayArray(x_date[-1])
     x_date_predict = np.concatenate((x_date, x_date_predict))
 
-    plot_poly_line(x_date_predict, y, prediction_line_ARIMA)
+    plot_poly_line(x_date_predict, y, prediction_line_ARIMA, hour)
 
-def predictARIMA(dataFrame):
-    model = ARIMA(dataFrame, order=(0,2,2))
-    results = model.fit(disp=-1, method="css", trend="c", maxiter=500, solver="powell")
-    preictedFutureValues = results.predict(start = len(dataFrame), end = len(dataFrame)+6, dynamic= True)
-    preictedFutureValues = preictedFutureValues + dataFrame[-1]
-    return preictedFutureValues
+    error_count = []
+    error_rate = 0
+    day = 0
+    for day in range(7):
+            error_rate = float(np.abs(ARIMAprediction[day] - test_dataframe[day]) / test_dataframe[day])
+            if error_rate > 1: error_rate = 1
+    error_count.append(error_rate)
+    
+    average_error = np.average(error_count)
+    print("Average accuracy: {}".format(average_error))
+    return average_error
 
 if __name__ == "__main__":
-    hour_of_day = 9
-    fullDataFrame = pd.read_csv(r'resources\data_2021.csv', index_col=0, header=0, parse_dates=True, date_parser=parser)
-    dataFrame = getPartofDF(fullDataFrame, hour_of_day)
-    runPolynomialRegressionARIMA(dataFrame)
+    fullDataFrame = pd.read_csv(r'resources/data_2015-20.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
+    test_data = pd.read_csv(r'resources/data_2015-20_test.csv')
+    error_rate = []
+
+    for hour_of_day in range(1, 24):
+        dataFrame = getPartofDF(fullDataFrame, hour_of_day)
+        test_dataframe = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
+        error = runPolynomialRegressionARIMA(dataFrame, test_dataframe, hour_of_day)
+        error_rate.append(error)
+    
+    plot_error_rate(error_rate, "LinearRegressionMovingAverage")

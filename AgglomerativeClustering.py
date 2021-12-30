@@ -1,16 +1,17 @@
+from numpy.lib.function_base import average
 import pandas as pd
 import numpy as np
 import time
 
-from libs.plots import plot_aglomerative_tree, plot_forecast
-from libs.dFManipulations import parser, getPartofDF
-from libs.mathHelper import *
+import libs.plots as plots
+import libs.dFManipulations as dfman
+import libs.mathHelper as mhelp
 
 from sklearn.cluster import AgglomerativeClustering
 
-def runAgglomerativeClustering(dataFrame, test_data=None):
+def runAgglomerativeClustering(dataFrame, test_data, hour):
     x_date = np.array(dataFrame.index.values)
-    dates_of_forecast = create7dayArray(x_date[-1])
+    dates_of_forecast = mhelp.create7dayArray(x_date[-1])
     y = np.array(dataFrame)
     n_clusters = 25
 
@@ -26,19 +27,38 @@ def runAgglomerativeClustering(dataFrame, test_data=None):
     performance = end_timer - start_timer
     print("Time for execution: " + str(performance))
 
-    calculateAverageSilhouette(y.reshape(-1, 1), labels, n_clusters)
+    mhelp.calculateAverageSilhouette(y.reshape(-1, 1), labels, n_clusters)
 
-    plot_aglomerative_tree(x_date, y, labels)
-    forecasted_clusters = predictnextNDays(labels, 7)
-    forecast_values = getResults(dataFrame, labels, forecasted_clusters)
+    plots.plot_aglomerative_tree(x_date, y, labels)
+    forecasted_clusters = mhelp.predictnextNDays(labels, 7)
+    forecast_values = mhelp.getResults(dataFrame, labels, forecasted_clusters)
 
-    print_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
-    plot_forecast(forecast_values, forecasted_clusters, dates_of_forecast, test_data)
+    mhelp.print_forecast(forecast_values, forecasted_clusters, dates_of_forecast)
+    plots.plot_forecast(forecast_values, forecasted_clusters, dates_of_forecast, test_data, hour)
+    error_count = []
+    error_rate = 0
+    day = 0
+    for label in forecasted_clusters:
+        if test_data[day] < forecast_values[label][1] and test_data[day] > forecast_values[label][0]:
+            error_rate = 0
+        else:
+            error_rate = (forecast_values[label][2] - test_data[day]) / test_data[day]
+        day += 1
+        error_count.extend(error_rate)
+    
+    average_error = np.average(error_count)
+    print("Average accuracy: {}".format(average_error))
+    return average_error
 
 if __name__ == "__main__":
     hour_of_day = 9
-    fulldataFrame = pd.read_csv(r'resources\data_2021.csv', index_col=0, header=None, parse_dates=True, date_parser=parser)
-    dataFrame = getPartofDF(fulldataFrame, hour_of_day)
-    test_data = pd.read_csv(r'resources\data_2021_test.csv')
-    test_data = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
-    runAgglomerativeClustering(dataFrame, test_data)
+    fulldataFrame = pd.read_csv(r'resources/data_2015-20.csv', index_col=0, header=None, parse_dates=True, date_parser=dfman.parser)
+    test_data = pd.read_csv(r'resources/data_2015-20_test.csv')
+    error_rate = []
+    for hour in range(1, 24):
+        dataFrame = dfman.getPartofDF(fulldataFrame, hour)
+        test_data_2 = pd.DataFrame(test_data, columns=[str(hour)]).to_numpy()
+        error = runAgglomerativeClustering(dataFrame, test_data_2, hour)
+        error_rate.append(error)
+    
+    plots.plot_error_rate(error_rate, "AgglomerativeClustering")

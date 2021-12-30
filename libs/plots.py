@@ -18,7 +18,9 @@ def plot_csv(dataFrame):
     figManager.window.showMaximized()
 
     plt.savefig('results/' + callerFunction + '_csv.png')
-    plt.show()
+    plt.clf()
+    plt.close()
+    #plt.show()
 
 def plot_csv_scater(dataFrame):
     callerFunction = str(inspect.stack()[1].function)
@@ -35,9 +37,10 @@ def plot_csv_scater(dataFrame):
     figManager.window.showMaximized()
 
     plt.savefig('results/' + callerFunction + '_scater.png')
-    plt.show()
+    plt.clf()
+    plt.close()
 
-def plot_poly_line(x, y, prediction_line):
+def plot_poly_line(x, y, prediction_line, hour):
     callerFunction = str(inspect.stack()[1].function)
     callerFunction = callerFunction[3:]
 
@@ -45,10 +48,13 @@ def plot_poly_line(x, y, prediction_line):
 
     x_for_y = x[:len(y)]
     plt.scatter(x_for_y, y, s=5)
+    plt.title("{}: Forecast for hour {:02d}:00".format(callerFunction, hour))
+    plt.xlabel("Day of the forecast")
+    plt.ylabel("Energy consumption (MW)")
     plt.plot(x, prediction_line, color='m')
-
-    plt.savefig('results/' + callerFunction + '_line.png')
-    plt.show()
+    plt.savefig('results/{}/{:02d}_forecast.png'.format(callerFunction, hour))
+    plt.clf()
+    plt.close()
 
 def plot_array_blobs(x, y, labels):
     callerFunction = str(inspect.stack()[1].function)
@@ -67,7 +73,8 @@ def plot_array_blobs(x, y, labels):
             plt.plot_date(x[i], y[i][j], xdate=True, ydate=False, color=colors[labels[i]])
 
     plt.savefig('results/' + callerFunction + '_colorpoints.png')
-    plt.show()
+    plt.clf()
+    plt.close()
 
 def plot_aglomerative_tree(x, y, labels):
     callerFunction = str(inspect.stack()[1].function)
@@ -83,20 +90,36 @@ def plot_aglomerative_tree(x, y, labels):
     for i in range(x_len):
         plt.plot_date(x[i], y[i], xdate=True, ydate=False, color=colors[labels[i]])
     plt.savefig('results/' + callerFunction + '_colorpoints.png')
-    plt.show()
+    plt.clf()
+    plt.close()
 
-def plot_forecast(forecast_values, labels_of_forecast, dates_of_forecast, test_data):
+def plot_forecast(forecast_values, labels_of_forecast, dates_of_forecast, test_data, hour):
     callerFunction = str(inspect.stack()[1].function)
     callerFunction = callerFunction[3:]
 
     day = 0
     _, ax = plt.subplots()
     ax.clear()
+    ax.set_title("{}: Forecast for hour {:02d}:00".format(callerFunction, hour))
+    ax.set_xlabel("Day of the forecast")
+    ax.set_ylabel("Energy consumption (MW)")
+
+    for label in ax.xaxis.get_ticklabels()[1::2]:
+        label.set_visible(False)
 
     for label in labels_of_forecast:
         ax.plot_date([dates_of_forecast[day]] * len(forecast_values[label]), forecast_values[label], marker = 's', color="steelblue")
         if test_data is not None:
             ax.plot_date(dates_of_forecast[day], test_data[day], marker='d', color='orangered')
         day += 1
-    plt.savefig('results/' + callerFunction + '_forecast.png')
-    plt.show()
+    plt.savefig('results/{}/{:02d}_forecast.png'.format(callerFunction, hour))
+    plt.clf()
+    plt.close()
+    
+def plot_error_rate(error_rate, algorithm_name):
+    plt.ylim([0, 1])
+    plt.ylabel("Deviation from test data")
+    plt.xlabel("Hour of the day")
+    plt.title("{}: \nAverage error for 7 day forecast on hourly basis".format(algorithm_name))
+    plt.scatter(list(range(len(error_rate))), error_rate)
+    plt.savefig('results/{}/avg_error.png'.format(algorithm_name))
