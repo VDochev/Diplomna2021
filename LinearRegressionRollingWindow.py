@@ -32,10 +32,6 @@ def runPolynomialRegression(dataFrame, test_dataframe, hour):
     model.fit(x_poly, y)
     y_poly_pred = model.predict(x_poly)
 
-    # Prints for determining the best degree for the algorithm
-    #print_calculated_errors(y, y_poly_pred)
-    #plot_poly_line(x_date, y, y_poly_pred)
-
     # Predict using rolling window
     rollingWindow = predictRollingWindow(y_poly_pred.reshape(-1), 14)
     prediction_line_rWindow = np.concatenate((y_poly_pred.reshape(-1), rollingWindow))
@@ -78,5 +74,5 @@ if __name__ == "__main__":
         test_dataframe = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
         error = runPolynomialRegression(dataFrame, test_dataframe, hour_of_day)
         error_rate.append(error)
-    
+        
     plot_error_rate(error_rate, "LinearRegressionMovingAverage")

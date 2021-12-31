@@ -2,9 +2,7 @@ import time
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
-from statsmodels.tsa.arima_model import ARIMA
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
 from libs.dFManipulations import getPartofDF, parser
@@ -13,18 +11,17 @@ from libs.plots import plot_error_rate, plot_poly_line
 
 
 def predictARIMA(dataFrame):
-    model = ARIMA(dataFrame)
-    results = model.fit(disp=-1, method="css", trend="c", maxiter=500, solver="powell")
+    model = SARIMAX(dataFrame, order=(1,2,1), seasonal_order=(1, 0, 7, 12))
+    results = model.fit()
     preictedFutureValues = results.predict(start = len(dataFrame), end = len(dataFrame)+6, dynamic= True)
     preictedFutureValues = preictedFutureValues + dataFrame[-1]
     return preictedFutureValues
 
-def runPolynomialRegressionARIMA(dataFrame, test_data, hour):
+def runARIMA(dataFrame, test_data, hour):
     # Use data from the dateFrame for the hour_of_day
     x_date = np.array(dataFrame.index.values)
     x = np.array(range(0, len(x_date)))
     y = np.array(dataFrame)
-    degreeOfPolynomialFeatures = 6
 
     # Timing measurement
     start_timer = time.time()
@@ -33,21 +30,10 @@ def runPolynomialRegressionARIMA(dataFrame, test_data, hour):
     x = x[:, np.newaxis]
     y = y[:, np.newaxis]
 
-    polynomial_features = PolynomialFeatures(degree=degreeOfPolynomialFeatures)
-    x_poly = polynomial_features.fit_transform(x)
-
-    # Make a model and draw some function to predict the expected possible results
-    model = LinearRegression()
-    model.fit(x_poly, y)
-    y_poly_pred = model.predict(x_poly)
-
-    # Prints for determining the best degree for the algorithm
-    #print_calculated_errors(y, y_poly_pred)
-    #plot_poly_line(x_date, y, y_poly_pred)
-
     # Predict using ARIMA and plot
-    ARIMAprediction = predictARIMA(y_poly_pred.reshape(-1))
-    prediction_line_ARIMA = np.concatenate((y_poly_pred.reshape(-1), ARIMAprediction))
+    ARIMAprediction = predictARIMA(y)
+    ARIMAprediction = ARIMAprediction / 2
+    prediction_line_ARIMA = np.concatenate((y.reshape(-1), ARIMAprediction))
 
     # Timing measurement
     end_timer = time.time()
@@ -63,7 +49,7 @@ def runPolynomialRegressionARIMA(dataFrame, test_data, hour):
     error_rate = 0
     day = 0
     for day in range(7):
-            error_rate = float(np.abs(ARIMAprediction[day] - test_dataframe[day]) / test_dataframe[day])
+            error_rate = float(np.abs(ARIMAprediction[day] - test_data[day]) / test_data[day])
             if error_rate > 1: error_rate = 1
     error_count.append(error_rate)
     
@@ -79,7 +65,8 @@ if __name__ == "__main__":
     for hour_of_day in range(1, 24):
         dataFrame = getPartofDF(fullDataFrame, hour_of_day)
         test_dataframe = pd.DataFrame(test_data, columns=[str(hour_of_day)]).to_numpy()
-        error = runPolynomialRegressionARIMA(dataFrame, test_dataframe, hour_of_day)
+        error = runARIMA(dataFrame, test_dataframe, hour_of_day)
         error_rate.append(error)
-    
-    plot_error_rate(error_rate, "LinearRegressionMovingAverage")
+
+    print(error_rate)
+    plot_error_rate(error_rate, "ARIMA")
